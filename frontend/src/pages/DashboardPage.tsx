@@ -26,6 +26,12 @@ interface ApiKey {
   name: string;
 }
 
+interface WebhookLog {
+  timestamp: string;
+  payload: any;
+  status: string;
+}
+
 const schema = yup.object().shape({
   name: yup
     .string()
@@ -45,17 +51,17 @@ const schema = yup.object().shape({
         return false; // In case of an error, fail validation
       }
     }),
-  key:
-    yup
-      .string()
-      .trim()
-      .required('API key is required')
-      .min(10, 'API key must be at least 10 characters')
-      .matches(/^\S*$/, 'API key cannot contain spaces'),
+  key: yup
+    .string()
+    .trim()
+    .required('API key is required')
+    .min(10, 'API key must be at least 10 characters')
+    .matches(/^\S*$/, 'API key cannot contain spaces'),
 });
 
 const DashboardPage: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [serverError, setServerError] = useState('');
   const {
     control,
@@ -82,8 +88,21 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const fetchWebhookLogs = async () => {
+    try {
+      const response = await axios.get('http://localhost:8001/webhooks/logs/');
+      setWebhookLogs(response.data);
+    } catch (err) {
+      console.error('Failed to fetch webhook logs:', err);
+    }
+  };
+
   useEffect(() => {
     fetchApiKeys();
+    fetchWebhookLogs();
+
+    const interval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const onSubmit = async (data: any) => {
@@ -165,6 +184,32 @@ const DashboardPage: React.FC = () => {
               Add API Key
             </Button>
           </Box>
+        </Paper>
+
+        <Paper sx={{ p: 3, mt: 4, width: '100%' }}>
+          <Typography component="h2" variant="h5" gutterBottom>
+            Webhook Activity
+          </Typography>
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Timestamp</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Payload</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {webhookLogs.map((log, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                    <TableCell>{log.status}</TableCell>
+                    <TableCell sx={{ fontSize: '0.75rem' }}>{JSON.stringify(log.payload)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
 
         <TableContainer component={Paper} sx={{ mt: 4, width: '100%' }}>
