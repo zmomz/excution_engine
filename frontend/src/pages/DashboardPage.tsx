@@ -110,12 +110,15 @@ const DashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchApiKeys();
-    fetchWebhookLogs();
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      fetchApiKeys();
+      fetchWebhookLogs();
 
-    const interval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
+      const interval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [localStorage.getItem('access_token')]);
 
   const onSubmit = async (data: any) => {
     setServerError('');
