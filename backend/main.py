@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas, security, utils
+from . import crud, models, schemas, security, utils, config
 from .database import SessionLocal, engine
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -140,7 +140,7 @@ def check_api_key_name_exists(
 webhook_logs = []
 
 @app.post("/webhooks/", dependencies=[Depends(RateLimiter(times=2, seconds=5))])
-def receive_webhook(payload: dict):
+def receive_webhook(payload: dict, db: Session = Depends(get_db)):
     print(f"Received webhook payload: {payload}")
     status_message = "Webhook received and validated"
     status_code = 200
