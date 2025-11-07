@@ -139,8 +139,8 @@ def check_api_key_name_exists(
 
 webhook_logs = []
 
-@app.post("/webhooks/", dependencies=[Depends(RateLimiter(times=2, seconds=5))])
-def receive_webhook(payload: dict, db: Session = Depends(get_db)):
+@app.post("/webhooks/")
+def receive_webhook(payload: dict, db: Session = Depends(get_db), limiter: RateLimiter = Depends(RateLimiter(times=2, seconds=5))):
     print(f"Received webhook payload: {payload}")
     status_message = "Webhook received and validated"
     status_code = 200
