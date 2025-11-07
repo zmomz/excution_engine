@@ -18,12 +18,9 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-from . import config
-
-# ... (imports)
-
 @app.on_event("startup")
 async def startup():
+    models.Base.metadata.create_all(bind=engine)
     r = redis.from_url(config.REDIS_URL, encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(r)
 
