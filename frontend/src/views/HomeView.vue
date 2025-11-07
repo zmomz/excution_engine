@@ -1,18 +1,27 @@
 <template>
-  <div class="login-container">
-    <h1>Login</h1>
-    <form @submit.prevent="login">
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" v-model="username" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="password" required>
-      </div>
-      <button type="submit">Login</button>
-    </form>
-    <p v-if="error" class="error">{{ error }}</p>
+  <div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold text-center text-gray-700">Login</h2>
+      <form @submit.prevent="login" class="space-y-6">
+        <div>
+          <label for="username" class="text-sm font-medium text-gray-700">Username</label>
+          <input type="text" id="username" v-model="username" required
+                 class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div>
+          <label for="password" class="text-sm font-medium text-gray-700">Password</label>
+          <input type="password" id="password" v-model="password" required
+                 class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <div>
+          <button type="submit"
+                  class="w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Login
+          </button>
+        </div>
+      </form>
+      <p v-if="error" class="text-sm text-center text-red-600">{{ error }}</p>
+    </div>
   </div>
 </template>
 
@@ -54,41 +63,5 @@ const login = async () => {
 </script>
 
 <style scoped>
-.login-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-input {
-  width: 100%;
-  padding: 8px;
-  box-sizing: border-box;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.error {
-  color: red;
-  margin-top: 15px;
-}
+/* Scoped styles are no longer needed as we are using Tailwind CSS */
 </style>
