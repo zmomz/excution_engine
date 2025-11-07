@@ -108,8 +108,36 @@ def create_api_key_for_user(
 
 
 @app.get("/api-keys/", response_model=List[schemas.ApiKey])
+
+
 def read_api_keys_for_user(
+
+
     current_user: schemas.User = Depends(get_current_user),
+
+
     db: Session = Depends(get_db),
+
+
 ):
+
+
     return crud.get_user_api_keys(db=db, user_id=current_user.id)
+
+
+
+
+
+
+
+
+@app.post("/webhooks/")
+
+
+def receive_webhook(payload: dict):
+
+
+    print(f"Received webhook payload: {payload}")
+
+
+    return {"message": "Webhook received"}
