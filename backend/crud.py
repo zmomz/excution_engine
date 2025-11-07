@@ -12,7 +12,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+def get_user_api_key_by_name(db: Session, name: str, user_id: int):
+    return db.query(models.ApiKey).filter(models.ApiKey.name == name, models.ApiKey.owner_id == user_id).first()
+
 def create_user_api_key(db: Session, api_key: schemas.ApiKeyCreate, user_id: int):
+    if get_user_api_key_by_name(db, api_key.name, user_id):
+        return None  # Indicate duplicate name
     encrypted_key = security.encrypt_api_key(api_key.key)
     db_api_key = models.ApiKey(**api_key.dict(exclude={"key"}), encrypted_key=encrypted_key, owner_id=user_id)
     db.add(db_api_key)

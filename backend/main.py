@@ -113,7 +113,10 @@ def create_api_key_for_user(
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return crud.create_user_api_key(db=db, api_key=api_key, user_id=current_user.id)
+    db_api_key = crud.create_user_api_key(db=db, api_key=api_key, user_id=current_user.id)
+    if db_api_key is None:
+        raise HTTPException(status_code=400, detail="API key with this name already exists for this user")
+    return db_api_key
 
 
 @app.get("/api-keys/", response_model=List[schemas.ApiKey])
