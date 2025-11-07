@@ -163,7 +163,21 @@ def check_api_key_name_exists(
 webhook_logs = []
 
 @app.post("/webhooks/")
-def receive_webhook(payload: dict, db: Session = Depends(get_db), limiter: RateLimiter = Depends(RateLimiter(times=2, seconds=5))):
+async def receive_webhook(
+    request: Request,
+    db: Session = Depends(get_db),
+    limiter: RateLimiter = Depends(RateLimiter(times=2, seconds=5)),
+    x_signature: str = Header(None),
+):
+    if not x_signature:
+        raise HTTPException(status_code=401, detail="X-Signature header missing")
+
+    raw_payload = await request.body()
+
+    if not security.verify_webhook_signature(raw_payload, x_signature, config.WEBHOOK_SECRET):
+        raise HTTPException(status_code=401, detail="Invalid X-Signature")
+
+    payload = await request.json()
     print(f"Received webhook payload: {payload}")
     status_message = "Webhook received and validated"
     status_code = 200
