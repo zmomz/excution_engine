@@ -27,3 +27,13 @@ def create_user_api_key(db: Session, api_key: schemas.ApiKeyCreate, user_id: int
 
 def get_user_api_keys(db: Session, user_id: int):
     return db.query(models.ApiKey).filter(models.ApiKey.owner_id == user_id).all()
+
+def create_webhook_log(db: Session, payload: dict, status: str):
+    db_log = models.WebhookLog(payload=payload, status=status)
+    db.add(db_log)
+    db.commit()
+    db.refresh(db_log)
+    return db_log
+
+def get_webhook_logs(db: Session):
+    return db.query(models.WebhookLog).order_by(models.WebhookLog.timestamp.desc()).limit(100).all()
