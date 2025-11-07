@@ -69,7 +69,7 @@ const LoginPage: React.FC = () => {
       justifyContent="center"
       sx={{ minHeight: '100vh' }}
     >
-      <Grid xs={12} sm={8} md={5}>
+      <Grid container xs={12} sm={8} md={5} justifyContent="center">
         <Box
           sx={{
             display: 'flex',
@@ -81,7 +81,6 @@ const LoginPage: React.FC = () => {
             bgcolor: 'background.paper',
             width: '100%',
             maxWidth: 400,
-            mx: 'auto',
           }}
         >
           <Typography component="h1" variant="h5">
