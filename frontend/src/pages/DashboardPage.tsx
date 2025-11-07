@@ -45,12 +45,13 @@ const schema = yup.object().shape({
         return false; // In case of an error, fail validation
       }
     }),
-  key: yup
-    .string()
-    .trim()
-    .required('API key is required')
-    .min(10, 'API key must be at least 10 characters')
-    .matches(/^\S*$/, 'API key cannot contain spaces'),
+  key:
+    yup
+      .string()
+      .trim()
+      .required('API key is required')
+      .min(10, 'API key must be at least 10 characters')
+      .matches(/^\S*$/, 'API key cannot contain spaces'),
 });
 
 const DashboardPage: React.FC = () => {
@@ -118,12 +119,12 @@ const DashboardPage: React.FC = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography component="h1" variant="h4" gutterBottom>
           Dashboard
         </Typography>
 
-        <Paper sx={{ p: 3, mt: 4 }}>
+        <Paper sx={{ p: 3, mt: 4, width: '100%' }}>
           <Typography component="h2" variant="h5" gutterBottom>
             API Key Management
           </Typography>
@@ -166,7 +167,7 @@ const DashboardPage: React.FC = () => {
           </Box>
         </Paper>
 
-        <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <TableContainer component={Paper} sx={{ mt: 4, width: '100%' }}>
           <Table>
             <TableHead>
               <TableRow>
