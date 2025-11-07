@@ -118,7 +118,7 @@ const DashboardPage: React.FC = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography component="h1" variant="h4" gutterBottom>
           Dashboard
         </Typography>
