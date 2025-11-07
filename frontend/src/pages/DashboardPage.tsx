@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Container,
   TextField,
@@ -23,11 +26,23 @@ interface ApiKey {
   name: string;
 }
 
+const schema = yup.object().shape({
+  name: yup.string().required('Key name is required'),
+  key: yup.string().required('API key is required'),
+});
+
 const DashboardPage: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [newApiKeyName, setNewApiKeyName] = useState('');
-  const [newApiKeyValue, setNewApiKeyValue] = useState('');
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { name: '', key: '' },
+  });
 
   const fetchApiKeys = async () => {
     try {
@@ -39,7 +54,7 @@ const DashboardPage: React.FC = () => {
       });
       setApiKeys(response.data);
     } catch (err) {
-      setError('Failed to fetch API keys.');
+      setServerError('Failed to fetch API keys.');
       console.error('Fetch API keys error:', err);
     }
   };
@@ -48,16 +63,15 @@ const DashboardPage: React.FC = () => {
     fetchApiKeys();
   }, []);
 
-  const handleAddApiKey = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError('');
+  const onSubmit = async (data: any) => {
+    setServerError('');
     try {
       const token = localStorage.getItem('access_token');
       await axios.post(
         'http://localhost:8001/api-keys/',
         {
-          name: newApiKeyName,
-          key: newApiKeyValue,
+          name: data.name,
+          key: data.key,
         },
         {
           headers: {
@@ -65,11 +79,10 @@ const DashboardPage: React.FC = () => {
           },
         }
       );
-      setNewApiKeyName('');
-      setNewApiKeyValue('');
+      reset();
       fetchApiKeys(); // Refresh the list
     } catch (err) {
-      setError('Failed to add API key.');
+      setServerError('Failed to add API key.');
       console.error('Add API key error:', err);
     }
   };
@@ -83,43 +96,49 @@ const DashboardPage: React.FC = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="md" sx={{ mt: 4 }}>
+      <Container component="main" maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         <Typography component="h1" variant="h4" gutterBottom>
           Dashboard
         </Typography>
 
-        <Paper sx={{ p: 2, mt: 4 }}>
-          <Typography component="h2" variant="h5">
+        <Paper sx={{ p: 3, mt: 4 }}>
+          <Typography component="h2" variant="h5" gutterBottom>
             API Key Management
           </Typography>
-          <Box component="form" onSubmit={handleAddApiKey} sx={{ mt: 2 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="apiKeyName"
-              label="Key Name"
-              name="apiKeyName"
-              value={newApiKeyName}
-              onChange={(e) => setNewApiKeyName(e.target.value)}
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="Key Name"
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                />
+              )}
             />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="apiKeyValue"
-              label="API Key"
-              type="password"
-              id="apiKeyValue"
-              value={newApiKeyValue}
-              onChange={(e) => setNewApiKeyValue(e.target.value)}
+            <Controller
+              name="key"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="API Key"
+                  type="password"
+                  error={!!errors.key}
+                  helperText={errors.key?.message}
+                />
+              )}
             />
-            {error && <Alert severity="error">{error}</Alert>}
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{ mt: 2 }}
-            >
+            {serverError && <Alert severity="error">{serverError}</Alert>}
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
               Add API Key
             </Button>
           </Box>

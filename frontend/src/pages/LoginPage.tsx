@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import {
   Container,
   TextField,
@@ -10,22 +13,34 @@ import {
   Alert,
 } from '@mui/material';
 
+const schema = yup.object().shape({
+  username: yup.string().required('Username is required'),
+  password: yup
+    .string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+});
+
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [serverError, setServerError] = useState('');
   const navigate = useNavigate();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: { username: '', password: '' },
+  });
 
-  const handleLogin = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError('');
-
+  const onSubmit = async (data: any) => {
+    setServerError('');
     try {
       const response = await axios.post(
         'http://localhost:8001/token',
         new URLSearchParams({
-          username: username,
-          password: password,
+          username: data.username,
+          password: data.password,
         }),
         {
           headers: {
@@ -39,7 +54,7 @@ const LoginPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err) {
-      setError('Invalid username or password');
+      setServerError('Invalid username or password');
       console.error('Login error:', err);
     }
   };
@@ -57,32 +72,48 @@ const LoginPage: React.FC = () => {
         <Typography component="h1" variant="h5">
           Login
         </Typography>
-        <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ mt: 1 }}
+        >
+          <Controller
             name="username"
-            autoComplete="username"
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                margin="normal"
+                required
+                fullWidth
+                id="username"
+                label="Username"
+                autoComplete="username"
+                autoFocus
+                error={!!errors.username}
+                helperText={errors.username?.message}
+              />
+            )}
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
+          <Controller
             name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                margin="normal"
+                required
+                fullWidth
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+              />
+            )}
           />
-          {error && <Alert severity="error">{error}</Alert>}
+          {serverError && <Alert severity="error">{serverError}</Alert>}
           <Button
             type="submit"
             fullWidth
