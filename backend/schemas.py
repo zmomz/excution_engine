@@ -1,5 +1,27 @@
 from pydantic import BaseModel
-from typing import Optional
+
+class ApiKeyBase(BaseModel):
+    name: str
+
+class ApiKeyCreate(ApiKeyBase):
+    key: str
+
+class ApiKeyUpdate(ApiKeyBase):
+    pass
+
+class ApiKey(ApiKeyBase):
+    id: int
+    owner_id: int
+
+    class Config:
+        from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
 
 class UserBase(BaseModel):
     username: str
@@ -9,26 +31,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     id: int
+    api_keys: list[ApiKey] = []
 
     class Config:
-        orm_mode = True
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-class ApiKeyBase(BaseModel):
-    name: str
-
-class ApiKeyCreate(ApiKeyBase):
-    key: str
-
-class ApiKey(ApiKeyBase):
-    id: int
-    owner_id: int
-
-    class Config:
-        orm_mode = True
+        from_attributes = True

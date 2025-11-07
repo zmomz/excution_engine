@@ -126,6 +126,29 @@ def read_api_keys_for_user(
 ):
     return crud.get_user_api_keys(db=db, user_id=current_user.id)
 
+@app.delete("/api-keys/{api_key_id}", response_model=schemas.ApiKey)
+def delete_api_key_for_user(
+    api_key_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_api_key = crud.delete_api_key(db=db, api_key_id=api_key_id, user_id=current_user.id)
+    if db_api_key is None:
+        raise HTTPException(status_code=404, detail="API key not found")
+    return db_api_key
+
+@app.put("/api-keys/{api_key_id}", response_model=schemas.ApiKey)
+def update_api_key_for_user(
+    api_key_id: int,
+    api_key: schemas.ApiKeyUpdate,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    db_api_key = crud.update_api_key(db=db, api_key_id=api_key_id, name=api_key.name, user_id=current_user.id)
+    if db_api_key is None:
+        raise HTTPException(status_code=404, detail="API key not found")
+    return db_api_key
+
 
 @app.get("/api-keys/check-name/")
 def check_api_key_name_exists(

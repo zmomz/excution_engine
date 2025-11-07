@@ -28,6 +28,21 @@ def create_user_api_key(db: Session, api_key: schemas.ApiKeyCreate, user_id: int
 def get_user_api_keys(db: Session, user_id: int):
     return db.query(models.ApiKey).filter(models.ApiKey.owner_id == user_id).all()
 
+def delete_api_key(db: Session, api_key_id: int, user_id: int):
+    db_api_key = db.query(models.ApiKey).filter(models.ApiKey.id == api_key_id, models.ApiKey.owner_id == user_id).first()
+    if db_api_key:
+        db.delete(db_api_key)
+        db.commit()
+    return db_api_key
+
+def update_api_key(db: Session, api_key_id: int, name: str, user_id: int):
+    db_api_key = db.query(models.ApiKey).filter(models.ApiKey.id == api_key_id, models.ApiKey.owner_id == user_id).first()
+    if db_api_key:
+        db_api_key.name = name
+        db.commit()
+        db.refresh(db_api_key)
+    return db_api_key
+
 def create_webhook_log(db: Session, payload: dict, status: str):
     print(f"Attempting to create webhook log with status: {status} and payload: {payload}")
     db_log = models.WebhookLog(payload=payload, status=status)
