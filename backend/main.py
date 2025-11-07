@@ -127,6 +127,16 @@ def read_api_keys_for_user(
     return crud.get_user_api_keys(db=db, user_id=current_user.id)
 
 
+@app.get("/api-keys/check-name/")
+def check_api_key_name_exists(
+    name: str,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    existing_key = crud.get_user_api_key_by_name(db, name, current_user.id)
+    return {"exists": existing_key is not None}
+
+
 @app.post("/webhooks/", dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 def receive_webhook(payload: dict):
     print(f"Received webhook payload: {payload}")
