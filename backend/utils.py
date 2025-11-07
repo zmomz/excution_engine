@@ -14,18 +14,13 @@ def get_precision_rules(exchange_name: str, symbol: str):
             "price": market["precision"]["price"],
             "amount": market["precision"]["amount"],
         }
-    except (errors.ExchangeNotFound, errors.BadSymbol):
+    except (errors.ExchangeError, errors.BadSymbol):
         return None
 
 def validate_precision(value, precision):
     if precision is None:
         return False
-    # The number of decimal places is the negative log10 of the precision
-    # For example, a precision of 0.01 means 2 decimal places
-    # A precision of 1 means 0 decimal places
     decimal_places = -int(math.log10(precision)) if precision > 0 else 0
-    
-    # Check if the value has more decimal places than allowed
     value_str = str(value)
     if "." in value_str:
         return len(value_str.split(".")[1]) <= decimal_places
