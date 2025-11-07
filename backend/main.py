@@ -1,5 +1,5 @@
 from jose import JWTError, jwt
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, status, Request
@@ -137,15 +137,30 @@ def check_api_key_name_exists(
     return {"exists": existing_key is not None}
 
 
+webhook_logs = []
+
 @app.post("/webhooks/", dependencies=[Depends(RateLimiter(times=2, seconds=5))])
 def receive_webhook(payload: dict):
     print(f"Received webhook payload: {payload}")
+    status_message = "Webhook received and validated"
+    status_code = 200
 
     # Example precision validation
     if "trade_price" in payload and not utils.validate_precision(payload["trade_price"], utils.PRECISION_RULES["trade_price"]):
-        raise HTTPException(status_code=400, detail="Invalid precision for trade_price")
+        status_message = "Invalid precision for trade_price"
+        status_code = 400
     
     if "trade_quantity" in payload and not utils.validate_precision(payload["trade_quantity"], utils.PRECISION_RULES["trade_quantity"]):
-        raise HTTPException(status_code=400, detail="Invalid precision for trade_quantity")
+        status_message = "Invalid precision for trade_quantity"
+        status_code = 400
 
-    return {"message": "Webhook received and validated"}
+    webhook_logs.append({"timestamp": str(datetime.now()), "payload": payload, "status": status_message})
+
+    if status_code != 200:
+        raise HTTPException(status_code=status_code, detail=status_message)
+
+    return {"message": status_message}
+
+@app.get("/webhooks/logs/")
+def get_webhook_logs():
+    return webhook_logs
