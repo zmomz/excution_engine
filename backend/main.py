@@ -145,14 +145,22 @@ def receive_webhook(payload: dict):
     status_message = "Webhook received and validated"
     status_code = 200
 
-    # Example precision validation
-    if "trade_price" in payload and not utils.validate_precision(payload["trade_price"], utils.PRECISION_RULES["trade_price"]):
-        status_message = "Invalid precision for trade_price"
+    exchange_name = payload.get("tv.exchange", "binance") # Default to binance for now
+    symbol = payload.get("tv.symbol", "BTC/USDT") # Default to BTC/USDT for now
+
+    precision_rules = utils.get_precision_rules(exchange_name, symbol)
+
+    if not precision_rules:
+        status_message = f"Could not fetch precision rules for {exchange_name} and {symbol}"
         status_code = 400
-    
-    if "trade_quantity" in payload and not utils.validate_precision(payload["trade_quantity"], utils.PRECISION_RULES["trade_quantity"]):
-        status_message = "Invalid precision for trade_quantity"
-        status_code = 400
+    else:
+        if "trade_price" in payload and not utils.validate_precision(payload["trade_price"], precision_rules["price"]):
+            status_message = "Invalid precision for trade_price"
+            status_code = 400
+        
+        if "trade_quantity" in payload and not utils.validate_precision(payload["trade_quantity"], precision_rules["amount"]):
+            status_message = "Invalid precision for trade_quantity"
+            status_code = 400
 
     webhook_logs.append({"timestamp": str(datetime.now()), "payload": payload, "status": status_message})
     print(f"Webhook logs after append: {webhook_logs}")
