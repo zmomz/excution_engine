@@ -20,6 +20,7 @@
 - ✅ **Security Hardening**:
   - CORS middleware configuration
   - Rate limiting (2 requests/5 seconds) using fastapi-limiter + Redis
+  - **Webhook Signature Validation** using HMAC-SHA256
   - Redis Docker container setup
 - ✅ **Configuration System**:
   - Centralized configuration in `backend/config.py` for database URL, secret key, Redis URL, etc.
@@ -55,7 +56,8 @@
    - Successfully migrated database from SQLite to PostgreSQL.
    - Implemented persistent webhook logging to PostgreSQL.
    - Established a centralized configuration system.
-   - **Implemented full API Key CRUD on both backend and frontend.**
+   - Implemented full API Key CRUD on both backend and frontend.
+   - **Implemented and tested webhook signature validation.**
 
 2. **Comprehensive Testing**:
    - Manual testing of all features (registration, login, API keys, webhooks, rate limiting)
@@ -63,22 +65,23 @@
    - Precision validation testing with both valid and invalid payloads (now dynamic via `ccxt`)
    - Thorough manual testing of all frontend validation rules and layout responsiveness
    - Verified PostgreSQL database persistence for webhook logs.
-   - **Verified API Key CRUD operations (add, edit, delete) on both backend and frontend.**
+   - Verified API Key CRUD operations (add, edit, delete) on both backend and frontend.
+   - **Verified webhook signature validation with missing, invalid, and valid signatures.**
 
 3. **Production-Ready Features**:
    - Encrypted sensitive data storage
    - Proper error handling and validation
-   - Security best practices (CORS, rate limiting, password hashing)
+   - Security best practices (CORS, rate limiting, password hashing, webhook signature validation)
    - Dynamic, exchange-aware precision validation.
    - Persistent data storage for critical events.
    - Centralized and manageable configuration.
-   - **Complete API Key lifecycle management.**
+   - Complete API Key lifecycle management.
 
 ### **Current Status**
 - **Backend**: Running on http://localhost:8001 (in screen session)
 - **Frontend**: Running on http://localhost:5173 (in screen session)
 - **Redis**: Running in Docker container on port 6379
-- **All Milestone 1 requirements, including architectural improvements and full API Key CRUD, completed and tested**
+- **All Milestone 1 requirements, including architectural improvements, full API Key CRUD, and webhook security, completed and tested**
 
 ### **Ready for Next Phase**
 The foundation is solid and we're ready to proceed with **Milestone 2: Grid Strategy, DCA System & Position UI** which will involve:
