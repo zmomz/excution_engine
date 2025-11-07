@@ -14,9 +14,10 @@ import {
 } from '@mui/material';
 
 const schema = yup.object().shape({
-  username: yup.string().required('Username is required'),
+  username: yup.string().trim().required('Username is required'),
   password: yup
     .string()
+    .trim()
     .required('Password is required')
     .min(8, 'Password must be at least 8 characters'),
 });

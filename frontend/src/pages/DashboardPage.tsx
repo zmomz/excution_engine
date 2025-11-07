@@ -27,8 +27,8 @@ interface ApiKey {
 }
 
 const schema = yup.object().shape({
-  name: yup.string().required('Key name is required'),
-  key: yup.string().required('API key is required'),
+  name: yup.string().trim().required('Key name is required'),
+  key: yup.string().trim().required('API key is required'),
 });
 
 const DashboardPage: React.FC = () => {
