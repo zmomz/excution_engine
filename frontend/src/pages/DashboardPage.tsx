@@ -19,7 +19,16 @@ import {
   Paper,
   AppBar,
   Toolbar,
+  IconButton,
+  Modal,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ApiKey {
   id: number;
@@ -63,6 +72,9 @@ const DashboardPage: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
   const [serverError, setServerError] = useState('');
+  const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
+  const [deletingKey, setDeletingKey] = useState<ApiKey | null>(null);
+
   const {
     control,
     handleSubmit,
@@ -129,6 +141,52 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleEdit = (key: ApiKey) => {
+    setEditingKey(key);
+  };
+
+  const handleDelete = (key: ApiKey) => {
+    setDeletingKey(key);
+  };
+
+  const handleUpdate = async (data: any) => {
+    if (!editingKey) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.put(
+        `http://localhost:8001/api-keys/${editingKey.id}`,
+        {
+          name: data.name,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setEditingKey(null);
+      fetchApiKeys();
+    } catch (err) {
+      console.error('Update API key error:', err);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingKey) return;
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.delete(`http://localhost:8001/api-keys/${deletingKey.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setDeletingKey(null);
+      fetchApiKeys();
+    } catch (err) {
+      console.error('Delete API key error:', err);
+    }
+  };
+
   return (
     <>
       <AppBar position="static">
@@ -186,6 +244,32 @@ const DashboardPage: React.FC = () => {
           </Box>
         </Paper>
 
+        <TableContainer component={Paper} sx={{ mt: 4, width: '100%' }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Key Name</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {apiKeys.map((key) => (
+                <TableRow key={key.id}>
+                  <TableCell>{key.name}</TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={() => handleEdit(key)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton onClick={() => handleDelete(key)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
         <Paper sx={{ p: 3, mt: 4, width: '100%' }}>
           <Typography component="h2" variant="h5" gutterBottom>
             Webhook Activity
@@ -211,24 +295,65 @@ const DashboardPage: React.FC = () => {
             </Table>
           </TableContainer>
         </Paper>
-
-        <TableContainer component={Paper} sx={{ mt: 4, width: '100%' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Key Name</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {apiKeys.map((key) => (
-                <TableRow key={key.id}>
-                  <TableCell>{key.name}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
       </Container>
+
+      {/* Edit Modal */}
+      <Modal open={!!editingKey} onClose={() => setEditingKey(null)}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          border: '2px solid #000',
+          boxShadow: 24,
+          p: 4,
+        }}>
+          <Typography variant="h6" component="h2">
+            Edit API Key
+          </Typography>
+          <form onSubmit={handleSubmit(handleUpdate)}>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="Key Name"
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                />
+              )}
+            />
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+              Update
+            </Button>
+          </form>
+        </Box>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!deletingKey}
+        onClose={() => setDeletingKey(null)}
+      >
+        <DialogTitle>Delete API Key</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the API key "{deletingKey?.name}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeletingKey(null)}>Cancel</Button>
+          <Button onClick={confirmDelete} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
