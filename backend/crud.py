@@ -11,3 +11,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def create_user_api_key(db: Session, api_key: schemas.ApiKeyCreate, user_id: int):
+    encrypted_key = security.encrypt_api_key(api_key.key)
+    db_api_key = models.ApiKey(**api_key.dict(exclude={"key"}), encrypted_key=encrypted_key, owner_id=user_id)
+    db.add(db_api_key)
+    db.commit()
+    db.refresh(db_api_key)
+    return db_api_key
+
+def get_user_api_keys(db: Session, user_id: int):
+    return db.query(models.ApiKey).filter(models.ApiKey.owner_id == user_id).all()

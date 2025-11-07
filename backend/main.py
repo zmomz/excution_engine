@@ -1,5 +1,6 @@
 from jose import JWTError, jwt
 from datetime import timedelta
+from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -96,3 +97,19 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.get("/users/me/", response_model=schemas.User)
 def read_users_me(current_user: schemas.User = Depends(get_current_user)):
     return current_user
+
+@app.post("/api-keys/", response_model=schemas.ApiKey)
+def create_api_key_for_user(
+    api_key: schemas.ApiKeyCreate,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.create_user_api_key(db=db, api_key=api_key, user_id=current_user.id)
+
+
+@app.get("/api-keys/", response_model=List[schemas.ApiKey])
+def read_api_keys_for_user(
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_user_api_keys(db=db, user_id=current_user.id)
