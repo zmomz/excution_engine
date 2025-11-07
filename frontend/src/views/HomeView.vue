@@ -39,22 +39,25 @@ const login = async () => {
 </script>
 
 <template>
-  <div class="flex justify-content-center align-items-center min-h-screen">
+  <div class="flex justify-content-center align-items-center" style="margin-top: 5rem;">
     <Card class="w-full max-w-md">
       <template #title>
-        <h2 class="text-center">Login</h2>
+        <h2 class="text-center text-2xl font-semibold">Welcome Back</h2>
+      </template>
+      <template #subtitle>
+        <p class="text-center text-color-secondary">Please login to continue</p>
       </template>
       <template #content>
-        <form @submit.prevent="login" class="p-fluid">
+        <form @submit.prevent="login" class="p-fluid mt-5">
           <div class="field">
             <label for="username">Username</label>
             <InputText id="username" v-model="username" type="text" />
           </div>
-          <div class="field">
+          <div class="field mt-4">
             <label for="password">Password</label>
             <InputText id="password" v-model="password" type="password" />
           </div>
-          <Button type="submit" label="Login" class="mt-4" />
+          <Button type="submit" label="Login" class="w-full mt-5" />
         </form>
         <p v-if="error" class="text-center text-red-500 mt-4">{{ error }}</p>
       </template>

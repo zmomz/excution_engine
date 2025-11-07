@@ -5,17 +5,28 @@ import Toolbar from 'primevue/toolbar';
 
 <template>
   <div id="app">
-    <Toolbar>
+    <Toolbar class="shadow-md">
       <template #start>
-        <h1 class="text-2xl font-bold text-primary-600">Execution Engine</h1>
+        <div class="flex align-items-center">
+          <i class="pi pi-bolt text-2xl text-primary mr-2"></i>
+          <h1 class="text-2xl font-semibold">Execution Engine</h1>
+        </div>
       </template>
     </Toolbar>
 
-    <main class="p-4">
+    <main class="main-content">
       <RouterView />
     </main>
   </div>
 </template>
+
+<style scoped>
+.main-content {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+</style>
 
 <style>
 /* We can add global styles here if needed, but we'll rely on Tailwind for now */
