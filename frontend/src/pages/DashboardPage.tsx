@@ -41,7 +41,7 @@ interface WebhookLog {
   status: string;
 }
 
-const schema = yup.object().shape({
+const addSchema = yup.object().shape({
   name: yup
     .string()
     .trim()
@@ -68,6 +68,10 @@ const schema = yup.object().shape({
     .matches(/^\S*$/, 'API key cannot contain spaces'),
 });
 
+const editSchema = yup.object().shape({
+  name: yup.string().trim().required('Key name is required'),
+});
+
 const DashboardPage: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
@@ -76,13 +80,22 @@ const DashboardPage: React.FC = () => {
   const [deletingKey, setDeletingKey] = useState<ApiKey | null>(null);
 
   const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
+    control: addControl,
+    handleSubmit: handleAddSubmit,
+    reset: addReset,
+    formState: { errors: addErrors },
   } = useForm({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(addSchema),
     defaultValues: { name: '', key: '' },
+  });
+
+  const {
+    control: editControl,
+    handleSubmit: handleEditSubmit,
+    reset: editReset,
+    formState: { errors: editErrors },
+  } = useForm({
+    resolver: yupResolver(editSchema),
   });
 
   const fetchApiKeys = async () => {
@@ -120,7 +133,7 @@ const DashboardPage: React.FC = () => {
     }
   }, [localStorage.getItem('access_token')]);
 
-  const onSubmit = async (data: any) => {
+  const onAddSubmit = async (data: any) => {
     setServerError('');
     try {
       const token = localStorage.getItem('access_token');
@@ -136,7 +149,7 @@ const DashboardPage: React.FC = () => {
           },
         }
       );
-      reset();
+      addReset();
       fetchApiKeys(); // Refresh the list
     } catch (err) {
       setServerError('Failed to add API key.');
@@ -146,13 +159,14 @@ const DashboardPage: React.FC = () => {
 
   const handleEdit = (key: ApiKey) => {
     setEditingKey(key);
+    editReset({ name: key.name });
   };
 
   const handleDelete = (key: ApiKey) => {
     setDeletingKey(key);
   };
 
-  const handleUpdate = async (data: any) => {
+  const onEditSubmit = async (data: any) => {
     if (!editingKey) return;
     try {
       const token = localStorage.getItem('access_token');
@@ -208,10 +222,10 @@ const DashboardPage: React.FC = () => {
           <Typography component="h2" variant="h5" gutterBottom>
             API Key Management
           </Typography>
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
+          <Box component="form" onSubmit={handleAddSubmit(onAddSubmit)} sx={{ mt: 2 }}>
             <Controller
               name="name"
-              control={control}
+              control={addControl}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -219,14 +233,14 @@ const DashboardPage: React.FC = () => {
                   required
                   fullWidth
                   label="Key Name"
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
+                  error={!!addErrors.name}
+                  helperText={addErrors.name?.message}
                 />
               )}
             />
             <Controller
               name="key"
-              control={control}
+              control={addControl}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -235,8 +249,8 @@ const DashboardPage: React.FC = () => {
                   fullWidth
                   label="API Key"
                   type="password"
-                  error={!!errors.key}
-                  helperText={errors.key?.message}
+                  error={!!addErrors.key}
+                  helperText={addErrors.key?.message}
                 />
               )}
             />
@@ -316,10 +330,10 @@ const DashboardPage: React.FC = () => {
           <Typography variant="h6" component="h2">
             Edit API Key
           </Typography>
-          <form onSubmit={handleSubmit(handleUpdate)}>
+          <form onSubmit={handleEditSubmit(onEditSubmit)}>
             <Controller
               name="name"
-              control={control}
+              control={editControl}
               render={({ field }) => (
                 <TextField
                   {...field}
@@ -327,8 +341,8 @@ const DashboardPage: React.FC = () => {
                   required
                   fullWidth
                   label="Key Name"
-                  error={!!errors.name}
-                  helperText={errors.name?.message}
+                  error={!!editErrors.name}
+                  helperText={editErrors.name?.message}
                 />
               )}
             />
