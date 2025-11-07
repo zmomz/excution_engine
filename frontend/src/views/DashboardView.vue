@@ -1,27 +1,30 @@
 <template>
   <div class="container mx-auto px-6 py-8">
-    <h2 class="text-2xl font-bold text-gray-700">Dashboard</h2>
-    <p class="mt-2 text-gray-600">Welcome to your protected dashboard.</p>
+    <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
+    <p class="mt-2 text-gray-600">Welcome back, manage your settings below.</p>
 
-    <div class="mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h3 class="text-lg font-medium text-gray-700">API Key Management</h3>
+    <div class="mt-8 p-8 bg-white rounded-lg shadow-lg">
+      <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        API Key Management
+      </h3>
       
-      <form @submit.prevent="createApiKey" class="mt-4 space-y-4">
-        <div class="flex flex-col md:flex-row md:space-x-4">
+      <form @submit.prevent="createApiKey" class="mt-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:space-x-6">
           <div class="flex-1">
             <label for="apiKeyName" class="text-sm font-medium text-gray-700">Key Name</label>
             <input type="text" id="apiKeyName" v-model="newApiKey.name" required placeholder="e.g., My Exchange"
-                   class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                   class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
           </div>
           <div class="flex-1">
             <label for="apiKeyValue" class="text-sm font-medium text-gray-700">API Key</label>
             <input type="password" id="apiKeyValue" v-model="newApiKey.key" required placeholder="Enter your API key"
-                   class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                   class="w-full px-4 py-2 mt-1 text-gray-700 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
           </div>
         </div>
         <div>
           <button type="submit"
-                  class="px-4 py-2 font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  class="px-5 py-2 font-semibold text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all">
             Add API Key
           </button>
         </div>
@@ -29,11 +32,11 @@
 
       <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
 
-      <div class="mt-6">
-        <h4 class="text-md font-medium text-gray-700">Your API Keys</h4>
-        <ul class="mt-2 border-t border-gray-200">
-          <li v-for="key in apiKeys" :key="key.id" class="flex items-center justify-between py-3 border-b border-gray-200">
-            <span class="text-gray-700">{{ key.name }}</span>
+      <div class="mt-8">
+        <h4 class="text-lg font-semibold text-gray-800">Your API Keys</h4>
+        <ul class="mt-4 border-t border-gray-200">
+          <li v-for="key in apiKeys" :key="key.id" class="flex items-center justify-between py-4 border-b border-gray-200">
+            <span class="text-gray-700 font-medium">{{ key.name }}</span>
             <!-- In a real app, you'd have buttons to delete or view the key -->
           </li>
         </ul>
