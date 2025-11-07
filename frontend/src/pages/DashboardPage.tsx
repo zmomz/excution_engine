@@ -28,7 +28,7 @@ interface ApiKey {
 
 const schema = yup.object().shape({
   name: yup.string().trim().required('Key name is required'),
-  key: yup.string().trim().required('API key is required').min(10, 'API key must be at least 10 characters'),
+  key: yup.string().trim().required('API key is required').min(10, 'API key must be at least 10 characters').matches(/^\S*$/, 'API key cannot contain spaces'),
 });
 
 const DashboardPage: React.FC = () => {
