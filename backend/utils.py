@@ -12,7 +12,7 @@ def get_precision_rules(exchange_name: str, symbol: str):
             "price": market["precision"]["price"],
             "amount": market["precision"]["amount"],
         }
-    except (ccxt.ExchangeNotFound, ccxt.BadSymbol):
+    except (ccxt.base.errors.ExchangeNotFound, ccxt.base.errors.BadSymbol):
         return None
 
 def validate_precision(value, precision):
