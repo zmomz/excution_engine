@@ -155,6 +155,7 @@ def receive_webhook(payload: dict):
         status_code = 400
 
     webhook_logs.append({"timestamp": str(datetime.now()), "payload": payload, "status": status_message})
+    print(f"Webhook logs after append: {webhook_logs}")
 
     if status_code != 200:
         raise HTTPException(status_code=status_code, detail=status_message)
@@ -163,4 +164,5 @@ def receive_webhook(payload: dict):
 
 @app.get("/webhooks/logs/")
 def get_webhook_logs():
+    print(f"Returning webhook logs: {webhook_logs}")
     return webhook_logs
