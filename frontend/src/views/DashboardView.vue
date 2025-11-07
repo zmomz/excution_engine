@@ -5,6 +5,7 @@ import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Card from 'primevue/card';
 
 const newApiKey = ref({
   name: '',
@@ -52,45 +53,48 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto px-6 py-8">
-    <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
-    <p class="mt-2 text-gray-600">Welcome back, manage your settings below.</p>
+  <div class="p-grid p-justify-center">
+    <div class="p-col-12 p-md-8">
+      <Card class="mt-4">
+        <template #title>
+          <h2 class="flex align-items-center">
+            <i class="pi pi-key mr-2"></i>
+            API Key Management
+          </h2>
+        </template>
+        <template #content>
+          <form @submit.prevent="createApiKey" class="p-fluid">
+            <div class="p-grid p-formgrid p-align-end">
+              <div class="p-field p-col-12 p-md-5">
+                <label for="apiKeyName">Key Name</label>
+                <InputText id="apiKeyName" v-model="newApiKey.name" type="text" placeholder="e.g., My Exchange" />
+              </div>
+              <div class="p-field p-col-12 p-md-5">
+                <label for="apiKeyValue">API Key</label>
+                <InputText id="apiKeyValue" v-model="newApiKey.key" type="password" placeholder="Enter your API key" />
+              </div>
+              <div class="p-field p-col-12 p-md-2">
+                <Button type="submit" label="Add" icon="pi pi-plus" />
+              </div>
+            </div>
+          </form>
 
-    <div class="mt-8 p-8 bg-white rounded-lg shadow-lg">
-      <h3 class="text-xl font-semibold text-gray-800 flex items-center">
-        <i class="pi pi-key mr-2"></i>
-        API Key Management
-      </h3>
-      
-      <form @submit.prevent="createApiKey" class="mt-6 space-y-4">
-        <div class="flex flex-col md:flex-row md:space-x-6">
-          <div class="flex-1 p-field">
-            <label for="apiKeyName" class="text-sm font-medium text-gray-700">Key Name</label>
-            <InputText id="apiKeyName" v-model="newApiKey.name" type="text" class="w-full mt-1" placeholder="e.g., My Exchange" />
+          <div v-if="error" class="p-col-12">
+            <p class="text-red-500">{{ error }}</p>
           </div>
-          <div class="flex-1 p-field">
-            <label for="apiKeyValue" class="text-sm font-medium text-gray-700">API Key</label>
-            <InputText id="apiKeyValue" v-model="newApiKey.key" type="password" class="w-full mt-1" placeholder="Enter your API key" />
+
+          <div class="mt-4">
+            <DataTable :value="apiKeys" :paginator="true" :rows="5" class="p-datatable-sm">
+              <Column field="name" header="Name"></Column>
+              <Column header="Actions">
+                <template #body>
+                  <Button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text" />
+                </template>
+              </Column>
+            </DataTable>
           </div>
-        </div>
-        <div>
-          <Button type="submit" label="Add API Key" icon="pi pi-plus" />
-        </div>
-      </form>
-
-      <div v-if="error" class="mt-4 text-sm text-red-600">{{ error }}</div>
-
-      <div class="mt-8">
-        <h4 class="text-lg font-semibold text-gray-800">Your API Keys</h4>
-        <DataTable :value="apiKeys" :paginator="true" :rows="5" class="p-datatable-sm mt-4">
-          <Column field="name" header="Name"></Column>
-          <Column header="Actions">
-            <template #body>
-              <Button icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text" />
-            </template>
-          </Column>
-        </DataTable>
-      </div>
+        </template>
+      </Card>
     </div>
   </div>
 </template>

@@ -1,19 +1,17 @@
 <script setup>
 import { RouterView } from 'vue-router'
+import Toolbar from 'primevue/toolbar';
 </script>
 
 <template>
-  <div id="app" class="bg-gray-50 min-h-screen font-sans">
-    <header class="bg-white shadow-sm">
-      <nav class="container mx-auto px-6 py-4">
-        <div class="flex justify-between items-center">
-          <h1 class="text-2xl font-bold text-primary-600">Execution Engine</h1>
-          <!-- Navigation links can be added here later -->
-        </div>
-      </nav>
-    </header>
+  <div id="app">
+    <Toolbar>
+      <template #start>
+        <h1 class="text-2xl font-bold text-primary-600">Execution Engine</h1>
+      </template>
+    </Toolbar>
 
-    <main>
+    <main class="p-4">
       <RouterView />
     </main>
   </div>
