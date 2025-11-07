@@ -29,10 +29,12 @@ def get_user_api_keys(db: Session, user_id: int):
     return db.query(models.ApiKey).filter(models.ApiKey.owner_id == user_id).all()
 
 def create_webhook_log(db: Session, payload: dict, status: str):
+    print(f"Attempting to create webhook log with status: {status} and payload: {payload}")
     db_log = models.WebhookLog(payload=payload, status=status)
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
+    print(f"Successfully created webhook log with id: {db_log.id}")
     return db_log
 
 def get_webhook_logs(db: Session):
