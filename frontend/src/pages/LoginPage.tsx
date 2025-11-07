@@ -5,7 +5,6 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
-  Container,
   TextField,
   Button,
   Typography,
@@ -71,71 +70,76 @@ const LoginPage: React.FC = () => {
       style={{ minHeight: '100vh' }}
     >
       <Grid item xs={12} sm={8} md={5}>
-        <Container component="main" maxWidth="xs">
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: 3,
+            boxShadow: 3,
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            width: '100%',
+            maxWidth: 400, // Explicitly set max width for the box
+            mx: 'auto', // Center the box horizontally
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Login
+          </Typography>
           <Box
-            sx={{
-              marginTop: 8,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{ mt: 1, width: '100%' }}
           >
-            <Typography component="h1" variant="h5">
-              Login
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-              sx={{ mt: 1 }}
+            <Controller
+              name="username"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="username"
+                  label="Username"
+                  autoComplete="username"
+                  autoFocus
+                  error={!!errors.username}
+                  helperText={errors.username?.message}
+                />
+              )}
+            />
+            <Controller
+              name="password"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="current-password"
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                />
+              )}
+            />
+            {serverError && <Alert severity="error">{serverError}</Alert>}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
             >
-              <Controller
-                name="username"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="username"
-                    label="Username"
-                    autoComplete="username"
-                    autoFocus
-                    error={!!errors.username}
-                    helperText={errors.username?.message}
-                  />
-                )}
-              />
-              <Controller
-                name="password"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="normal"
-                    required
-                    fullWidth
-                    label="Password"
-                    type="password"
-                    id="password"
-                    autoComplete="current-password"
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                  />
-                )}
-              />
-              {serverError && <Alert severity="error">{serverError}</Alert>}
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Login
-              </Button>
-            </Box>
+              Login
+            </Button>
           </Box>
-        </Container>
+        </Box>
       </Grid>
     </Grid>
   );
