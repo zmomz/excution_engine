@@ -27,8 +27,30 @@ interface ApiKey {
 }
 
 const schema = yup.object().shape({
-  name: yup.string().trim().required('Key name is required'),
-  key: yup.string().trim().required('API key is required').min(10, 'API key must be at least 10 characters').matches(/^\S*$/, 'API key cannot contain spaces'),
+  name: yup
+    .string()
+    .trim()
+    .required('Key name is required')
+    .test('is-unique', 'An API key with this name already exists', async function (value) {
+      if (!value) return true; // Skip validation if value is empty
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get(`http://localhost:8001/api-keys/check-name/?name=${value}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        return !response.data.exists;
+      } catch (error) {
+        return false; // In case of an error, fail validation
+      }
+    }),
+  key: yup
+    .string()
+    .trim()
+    .required('API key is required')
+    .min(10, 'API key must be at least 10 characters')
+    .matches(/^\S*$/, 'API key cannot contain spaces'),
 });
 
 const DashboardPage: React.FC = () => {
