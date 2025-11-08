@@ -170,6 +170,8 @@ async def receive_webhook(
     db: Session = Depends(get_db),
     limiter: RateLimiter = Depends(RateLimiter(times=2, seconds=5)),
     x_signature: str = Header(None),
+    # TODO: Implement a secure way to get the user from the webhook, e.g., via a unique URL or API key in the payload
+    current_user: schemas.User = Depends(get_current_user),
 ):
     if not x_signature:
         raise HTTPException(status_code=401, detail="X-Signature header missing")
@@ -206,7 +208,38 @@ async def receive_webhook(
     if status_code != 200:
         raise HTTPException(status_code=status_code, detail=status_message)
 
-    return {"message": status_message}
+    # Milestone 2 Logic: Position and Pyramid Handling
+    pair = payload.get("tv.symbol")
+    timeframe = payload.get("tv.timeframe")
+    entry_price = payload.get("tv.entry_price")
+
+    if not all([pair, timeframe, entry_price]):
+        raise HTTPException(status_code=400, detail="Missing required fields in webhook payload")
+
+    # Check for existing PositionGroup
+    position_group = db.query(models.PositionGroup).filter(
+        models.PositionGroup.pair == pair,
+        models.PositionGroup.timeframe == timeframe,
+        models.PositionGroup.owner_id == current_user.id,
+        models.PositionGroup.status != "Closed"
+    ).first()
+
+    if not position_group:
+        # Create a new PositionGroup
+        logger.info(f"Creating new PositionGroup for {pair} {timeframe}")
+        position_group_schema = schemas.PositionGroupCreate(pair=pair, timeframe=timeframe)
+        position_group = crud.create_position_group(db, position_group_schema, current_user.id)
+    
+    # Create a new Pyramid for this signal
+    logger.info(f"Creating new Pyramid for PositionGroup {position_group.id}")
+    pyramid_schema = schemas.PyramidCreate(position_group_id=position_group.id, entry_price=entry_price)
+    pyramid = crud.create_pyramid(db, pyramid_schema)
+
+    # TODO: Calculate and create DCA legs based on config
+    # TODO: Placeholder for order placement logic
+    logger.info(f"Simulating order placement for Pyramid {pyramid.id}")
+
+    return {"message": "Webhook processed and position updated"}
 
 @app.get("/webhooks/logs/")
 def get_webhook_logs(db: Session = Depends(get_db)):
