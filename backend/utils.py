@@ -25,3 +25,12 @@ def validate_precision(value, precision):
     if "." in value_str:
         return len(value_str.split(".")[1]) <= decimal_places
     return True
+
+def get_current_price(exchange_name: str, symbol: str) -> float | None:
+    try:
+        exchange_class = getattr(ccxt, exchange_name.lower())
+        exchange = exchange_class()
+        ticker = exchange.fetch_ticker(symbol)
+        return ticker["last"]
+    except (errors.ExchangeError, errors.BadSymbol):
+        return None
