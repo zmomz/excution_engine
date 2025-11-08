@@ -235,7 +235,25 @@ async def receive_webhook(
     pyramid_schema = schemas.PyramidCreate(position_group_id=position_group.id, entry_price=entry_price)
     pyramid = crud.create_pyramid(db, pyramid_schema)
 
-    # TODO: Calculate and create DCA legs based on config
+    # Calculate and create DCA legs based on a hardcoded config
+    # TODO: Move this to a proper configuration file
+    dca_config = [
+        {"price_gap": 0, "capital_weight": 0.2, "tp_target": 0.01},
+        {"price_gap": -0.005, "capital_weight": 0.2, "tp_target": 0.005},
+        {"price_gap": -0.01, "capital_weight": 0.2, "tp_target": 0.02},
+        {"price_gap": -0.015, "capital_weight": 0.2, "tp_target": 0.015},
+        {"price_gap": -0.02, "capital_weight": 0.2, "tp_target": 0.01},
+    ]
+
+    for leg_config in dca_config:
+        dca_leg_schema = schemas.DCALegCreate(
+            pyramid_id=pyramid.id,
+            price_gap=leg_config["price_gap"],
+            capital_weight=leg_config["capital_weight"],
+            tp_target=leg_config["tp_target"],
+        )
+        crud.create_dca_leg(db, dca_leg_schema)
+
     # TODO: Placeholder for order placement logic
     logger.info(f"Simulating order placement for Pyramid {pyramid.id}")
 
