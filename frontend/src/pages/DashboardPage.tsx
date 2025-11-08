@@ -206,21 +206,10 @@ const DashboardPage: React.FC = () => {
   };
 
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Execution Engine
-          </Typography>
-          <Button color="inherit" component={Link} to="/positions">
-            Positions
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h4" gutterBottom>
-          Dashboard
-        </Typography>
+    <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Typography component="h1" variant="h4" gutterBottom>
+        Dashboard
+      </Typography>
 
         <Paper sx={{ p: 3, mt: 4, width: '100%' }}>
           <Typography component="h2" variant="h5" gutterBottom>
