@@ -26,6 +26,9 @@ import {
   DialogTitle,
   Grid,
   CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -243,10 +246,11 @@ const DashboardPage: React.FC = () => {
     : 'inherit';
 
   return (
-    <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Typography component="h1" variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
+    <>
+      <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography component="h1" variant="h4" gutterBottom>
+          Dashboard
+        </Typography>
 
       {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
 
