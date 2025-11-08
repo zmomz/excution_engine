@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -138,6 +138,11 @@ const LoginPage: React.FC = () => {
             >
               Login
             </Button>
+            <Link to="/register" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Typography variant="body2" align="center">
+                Don't have an account? Register
+              </Typography>
+            </Link>
           </Box>
         </Box>
       </Grid>
