@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from . import models, schemas, security
+from .logging_config import logger
 
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
@@ -44,12 +45,12 @@ def update_api_key(db: Session, api_key_id: int, name: str, user_id: int):
     return db_api_key
 
 def create_webhook_log(db: Session, payload: dict, status: str):
-    print(f"Attempting to create webhook log with status: {status} and payload: {payload}")
+    logger.info(f"Attempting to create webhook log with status: {status} and payload: {payload}")
     db_log = models.WebhookLog(payload=payload, status=status)
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
-    print(f"Successfully created webhook log with id: {db_log.id}")
+    logger.info(f"Successfully created webhook log with id: {db_log.id}")
     return db_log
 
 def get_webhook_logs(db: Session):
