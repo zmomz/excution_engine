@@ -73,6 +73,7 @@
    - Verified webhook signature validation with missing, invalid, and valid signatures.
    - Verified that all backend logs are now structured and written to the log file.
    - **Verified user registration and login flow.**
+   - **Verified secure storage by inspecting the database to confirm password hashing (Argon2) and API key encryption (Fernet).**
 
 3. **Production-Ready Features**:
    - Encrypted sensitive data storage
