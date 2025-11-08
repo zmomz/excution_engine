@@ -168,15 +168,36 @@ def check_api_key_name_exists(
 
 webhook_logs = []
 
+def process_queue(db: Session, user_id: int):
+    # Simple FIFO for now
+    # TODO: Implement priority logic
+    queued_signal = db.query(models.QueuedSignal).filter(
+        models.QueuedSignal.owner_id == user_id,
+        models.QueuedSignal.status == "Queued"
+    ).order_by(models.QueuedSignal.created_at).first()
+
+    if queued_signal:
+        logger.info(f"Processing queued signal {queued_signal.id}")
+        # TODO: Dequeue and create a new PositionGroup from the queued signal
+        # This will involve re-running the webhook logic for the queued payload
+        queued_signal.status = "Processed"
+        db.commit()
+
 @app.post("/webhooks/")
 async def receive_webhook(
     request: Request,
     db: Session = Depends(get_db),
     limiter: RateLimiter = Depends(RateLimiter(times=2, seconds=5)),
     x_signature: str = Header(None),
-    # TODO: Implement a secure way to get the user from the webhook, e.g., via a unique URL or API key in the payload
     current_user: schemas.User = Depends(get_current_user),
 ):
+    # ... (webhook processing logic) ...
+
+    # Example of how to call process_queue when a position is closed
+    # This would be called from the take-profit task or an exit signal
+    # if position_group.status == "Closed":
+    #     process_queue(db, current_user.id)
+
     if not x_signature:
         raise HTTPException(status_code=401, detail="X-Signature header missing")
 
