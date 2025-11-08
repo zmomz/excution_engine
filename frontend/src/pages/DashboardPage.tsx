@@ -28,6 +28,8 @@ import {
   DialogTitle,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface ApiKey {
   id: number;
