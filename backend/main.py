@@ -229,9 +229,27 @@ async def receive_webhook(
     ).first()
 
     if not position_group:
+        # Check execution pool
+        # TODO: Get max_open_groups from config
+        max_open_groups = 10 
+        open_groups_count = db.query(models.PositionGroup).filter(
+            models.PositionGroup.owner_id == current_user.id,
+            models.PositionGroup.status == "Live"
+        ).count()
+
+        if open_groups_count >= max_open_groups:
+            logger.info(f"Execution pool is full. Queuing signal for {pair} {timeframe}")
+            queued_signal_schema = schemas.QueuedSignalCreate(
+                pair=pair,
+                timeframe=timeframe,
+                payload=payload
+            )
+            crud.create_queued_signal(db, queued_signal_schema, current_user.id)
+            return {"message": "Signal queued due to full execution pool"}
+
         # Create a new PositionGroup
         logger.info(f"Creating new PositionGroup for {pair} {timeframe}")
-        position_group_schema = schemas.PositionGroupCreate(pair=pair, timeframe=timeframe)
+        position_group_schema = schemas.PositionGroupCreate(pair=pair, timeframe=timeframe, status="Live")
         position_group = crud.create_position_group(db, position_group_schema, current_user.id)
     
     # Create a new Pyramid for this signal
