@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -14,11 +14,22 @@ const LogsPage: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [serverError, setServerError] = useState('');
+  const logsEndRef = useRef<null | HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    scrollToBottom();
+  }, [logs]);
+
+  useEffect(() => {
+    const fetchLogs = async (isInitialLoad = false) => {
       try {
-        setLoading(true);
+        if (isInitialLoad) {
+          setLoading(true);
+        }
         const token = localStorage.getItem('access_token');
         const response = await axios.get('http://localhost:8001/logs/', {
           headers: {
@@ -30,11 +41,13 @@ const LogsPage: React.FC = () => {
         setServerError('Failed to fetch logs.');
         console.error('Fetch logs error:', err);
       } finally {
-        setLoading(false);
+        if (isInitialLoad) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchLogs();
+    fetchLogs(true);
     const interval = setInterval(fetchLogs, 5000); // Refresh every 5 seconds
     return () => clearInterval(interval);
   }, []);
@@ -58,6 +71,7 @@ const LogsPage: React.FC = () => {
           )) : (
             <Typography>No logs available.</Typography>
           )}
+          <div ref={logsEndRef} />
         </Paper>
       )}
     </Container>

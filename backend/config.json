@@ -1,0 +1,46 @@
+{
+    "exchange": {
+        "name": "binance",
+        "testnet": true
+    },
+    "execution_pool": {
+        "max_open_groups": 15
+    },
+    "grid_strategy": {
+        "dca_config": [
+            {
+                "price_gap": -7,
+                "capital_weight": 0.2,
+                "tp_target": 0.01
+            },
+            {
+                "price_gap": -0.005,
+                "capital_weight": 4.2,
+                "tp_target": 0.005
+            },
+            {
+                "price_gap": -0.01,
+                "capital_weight": 0.2,
+                "tp_target": 0.02
+            },
+            {
+                "price_gap": -0.015,
+                "capital_weight": 0.2,
+                "tp_target": 0.015
+            },
+            {
+                "price_gap": -0.02,
+                "capital_weight": 0.2,
+                "tp_target": 0.01
+            }
+        ]
+    },
+    "risk_management": {
+        "risk_engine_enabled": false,
+        "activation_threshold": 2,
+        "max_loss_per_trade": 1
+    },
+    "webhook": {
+        "secret": "0000"
+    }
+}

@@ -166,8 +166,36 @@ Once the backend logic is functional, we will build the user interface for monit
 3.  **Settings Panel (New Page: `SettingsPage.tsx`):**
     *   Create a dedicated page for managing the engine's configuration.
     *   Build a form with sections for each category in the SOW (Exchange, Pool, Grid, Risk, etc.), allowing users to edit all parameters without touching the JSON file (Section 7.2 F).
+    *   The Exchange section will include a dropdown to select a pre-configured API key, linking the exchange configuration to a specific trading account.
     *   Implement backend API endpoints to read and write the `config.json` file.
 
 4.  **Performance & Portfolio Dashboard (Enhancement to `DashboardPage.tsx`):**
     *   This is the final major UI feature. We will add the new widgets specified in Section 7.1 to the existing dashboard.
     *   This will require new backend endpoints to calculate and serve historical performance metrics (PnL curves, win/loss stats, Sharpe ratio, etc.) from the database of closed trades.
+
+---
+
+## 5. Full Scope of Work (SOW)
+
+### 1. Overview
+The Execution Engine is a fully automated trading system that:
+•Receives TradingView webhook signals
+•Executes grid-based entries using pyramids received by tradingview and DCA inside the engine
+•Applies precision validation before every order
+•Automatically handles exits
+•Runs a Risk Engine to offset losing trades
+•Enforces max position limits using a pool + queue
+•Stores all data in database
+•Includes an integrated web app for real-time monitoring
+
+Key characteristics:
+•Supports multiple exchanges and symbols
+•All logic lives inside a single packaged webtop application / server
+•TradingView only triggers the entry (and optionally the exit)
+•The engine itself calculates and executes all DCA orders
+•The engine itself handles all pyramid scaling
+•The engine itself runs the Risk Engine, without needing TradingView
+•TradingView is only used to start or end a position. All DCA, pyramid scaling, take-profit, and risk logic are handled locally by the engine and do not require additional TradingView alerts.
+
+### 2. Grid Strategy
+... (and so on, including the full SOW)

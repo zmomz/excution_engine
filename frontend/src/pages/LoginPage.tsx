@@ -61,38 +61,33 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Grid
-      container
-      spacing={0}
-      direction="column"
-      alignItems="center"
-      justifyContent="center"
-      sx={{ minHeight: '100vh' }}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+      }}
     >
-      <Grid item xs={12} sm={8} md={5}>
+      <Box
+        sx={{
+          padding: 3,
+          boxShadow: 3,
+          borderRadius: 2,
+          bgcolor: 'background.paper',
+          width: '100%',
+          maxWidth: 400,
+        }}
+      >
+        <Typography component="h1" variant="h5" align="center">
+          Login
+        </Typography>
         <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            padding: 3,
-            boxShadow: 3,
-            borderRadius: 2,
-            bgcolor: 'background.paper',
-            width: '100%',
-            maxWidth: 400,
-            mx: 'auto',
-          }}
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ mt: 1, width: '100%' }}
         >
-          <Typography component="h1" variant="h5">
-            Login
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{ mt: 1, width: '100%' }}
-          >
             <Controller
               name="username"
               control={control}
@@ -145,9 +140,8 @@ const LoginPage: React.FC = () => {
             </Link>
           </Box>
         </Box>
-      </Grid>
-    </Grid>
-  );
+      </Box>
+    );
 };
 
 export default LoginPage;

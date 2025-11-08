@@ -29,6 +29,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  TablePagination,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -95,6 +96,9 @@ const DashboardPage: React.FC = () => {
   const [serverError, setServerError] = useState('');
   const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
   const [deletingKey, setDeletingKey] = useState<ApiKey | null>(null);
+  const [webhookPage, setWebhookPage] = useState(0);
+  const [webhookRowsPerPage, setWebhookRowsPerPage] = useState(10);
+  const [totalWebhookLogs, setTotalWebhookLogs] = useState(0);
 
   const {
     control: addControl,
@@ -132,8 +136,14 @@ const DashboardPage: React.FC = () => {
 
   const fetchWebhookLogs = async () => {
     try {
-      const response = await axios.get('http://localhost:8001/webhooks/logs/');
-      setWebhookLogs(response.data);
+      const response = await axios.get('http://localhost:8001/webhooks/logs/', {
+        params: {
+          skip: webhookPage * webhookRowsPerPage,
+          limit: webhookRowsPerPage,
+        },
+      });
+      setWebhookLogs(response.data.logs);
+      setTotalWebhookLogs(response.data.total);
     } catch (err) {
       console.error('Failed to fetch webhook logs:', err);
     }
@@ -160,15 +170,13 @@ const DashboardPage: React.FC = () => {
       fetchWebhookLogs();
       fetchDashboardMetrics();
 
-      const webhookInterval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
       const metricsInterval = setInterval(fetchDashboardMetrics, 5000); // Refresh every 5 seconds
 
       return () => {
-        clearInterval(webhookInterval);
         clearInterval(metricsInterval);
       };
     }
-  }, [localStorage.getItem('access_token')]);
+  }, [localStorage.getItem('access_token'), webhookPage, webhookRowsPerPage]);
 
   const onAddSubmit = async (data: any) => {
     setServerError('');
@@ -420,6 +428,18 @@ const DashboardPage: React.FC = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={totalWebhookLogs}
+            rowsPerPage={webhookRowsPerPage}
+            page={webhookPage}
+            onPageChange={(event, newPage) => setWebhookPage(newPage)}
+            onRowsPerPageChange={(event) => {
+              setWebhookRowsPerPage(parseInt(event.target.value, 10));
+              setWebhookPage(0);
+            }}
+          />
         </Paper>
       </Container>
 

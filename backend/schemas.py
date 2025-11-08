@@ -132,6 +132,18 @@ class QueuedSignal(QueuedSignalBase):
     class Config:
         from_attributes = True
 
+class WebhookLog(BaseModel):
+    timestamp: datetime
+    payload: dict
+    status: str
+
+    class Config:
+        from_attributes = True
+
+class WebhookLogPaginated(BaseModel):
+    logs: List[WebhookLog]
+    total: int
+
 class User(UserBase):
     id: int
     api_keys: list[ApiKey] = []

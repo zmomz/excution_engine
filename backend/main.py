@@ -8,7 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException, status, Request, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas, security, utils, config
+from . import crud, models, schemas, security, utils, config, config_manager
 from .database import SessionLocal, engine
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -368,9 +368,9 @@ def read_position_groups_for_user(
 ):
     return crud.get_position_groups_by_user(db=db, user_id=current_user.id)
 
-@app.get("/webhooks/logs/")
-def get_webhook_logs(db: Session = Depends(get_db)):
-    return crud.get_webhook_logs(db)
+@app.get("/webhooks/logs/", response_model=schemas.WebhookLogPaginated)
+def get_webhook_logs(db: Session = Depends(get_db), skip: int = 0, limit: int = 10):
+    return crud.get_webhook_logs(db, skip=skip, limit=limit)
 
 @app.get("/logs/")
 def get_logs(current_user: schemas.User = Depends(get_current_user)):

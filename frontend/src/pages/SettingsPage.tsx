@@ -11,12 +11,22 @@ import {
   Alert,
   Switch,
   FormControlLabel,
+  Grid,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+} from '@mui/material';
+
+interface ApiKey {
+  id: number;
+  name: string;
 }
-from '@mui/material';
 
 interface Config {
   exchange: {
     name: string;
+    api_key_id: number | null;
     testnet: boolean;
   };
   execution_pool: {
@@ -29,10 +39,19 @@ interface Config {
       tp_target: number;
     }>;
   };
+  risk_management: {
+    risk_engine_enabled: boolean;
+    activation_threshold: number;
+    max_loss_per_trade: number;
+  };
+  webhook: {
+    secret: string;
+  };
 }
 
 const SettingsPage: React.FC = () => {
   const [config, setConfig] = useState<Config | null>(null);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [serverError, setServerError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -50,14 +69,29 @@ const SettingsPage: React.FC = () => {
           },
         });
         setConfig(response.data);
-        reset(response.data); // Reset form with fetched data
+        reset(response.data);
       } catch (err) {
         setServerError('Failed to fetch configuration.');
         console.error('Fetch config error:', err);
       }
     };
 
+    const fetchApiKeys = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get('http://localhost:8001/api-keys/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setApiKeys(response.data);
+      } catch (err) {
+        console.error('Failed to fetch API keys:', err);
+      }
+    };
+
     fetchConfig();
+    fetchApiKeys();
   }, [reset]);
 
   const onSubmit = async (data: Config) => {
@@ -92,126 +126,152 @@ const SettingsPage: React.FC = () => {
   return (
     <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography component="h1" variant="h4" gutterBottom>
-        Settings
+        Engine Settings
       </Typography>
 
       {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
       {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
 
       <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
-        <Paper sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>Exchange Settings</Typography>
-          <Controller
-            name="exchange.name"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                margin="normal"
-                fullWidth
-                label="Exchange Name"
-                error={!!errors.exchange?.name}
-                helperText={errors.exchange?.name?.message}
-              />
-            )}
-          />
-          <Controller
-            name="exchange.testnet"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={<Switch {...field} checked={field.value} />}
-                label="Use Testnet"
-              />
-            )}
-          />
-        </Paper>
-
-        <Paper sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>Execution Pool Settings</Typography>
-          <Controller
-            name="execution_pool.max_open_groups"
-            control={control}
-            rules={{ required: 'Max open groups is required', min: { value: 1, message: 'Must be at least 1' } }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                margin="normal"
-                fullWidth
-                label="Max Open Position Groups"
-                type="number"
-                error={!!errors.execution_pool?.max_open_groups}
-                helperText={errors.execution_pool?.max_open_groups?.message}
-                onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
-              />
-            )}
-          />
-        </Paper>
-
-        <Paper sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>Grid Strategy - DCA Configuration</Typography>
-          {config.grid_strategy.dca_config.map((dca, index) => (
-            <Box key={index} sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
-              <Typography variant="subtitle1">DCA Leg {index}</Typography>
+        <Grid container spacing={3}>
+          {/* Exchange Settings */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3, height: '100%' }}>
+              <Typography variant="h6" gutterBottom>Exchange Settings</Typography>
               <Controller
-                name={`grid_strategy.dca_config.${index}.price_gap` as const}
+                name="exchange.name"
                 control={control}
-                rules={{ required: 'Price gap is required' }}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="normal"
-                    fullWidth
-                    label="Price Gap (%)"
-                    type="number"
-                    step="0.001"
-                    error={!!errors.grid_strategy?.dca_config?.[index]?.price_gap}
-                    helperText={errors.grid_strategy?.dca_config?.[index]?.price_gap?.message}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  <TextField {...field} margin="normal" fullWidth label="Exchange Name" />
+                )}
+              />
+              <Controller
+                name="exchange.api_key_id"
+                control={control}
+                render={({ field }) => (
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel id="api-key-select-label">Active API Key</InputLabel>
+                    <Select
+                      {...field}
+                      labelId="api-key-select-label"
+                      label="Active API Key"
+                      value={field.value || ''}
+                    >
+                      <MenuItem value=""><em>None</em></MenuItem>
+                      {apiKeys.map((key) => (
+                        <MenuItem key={key.id} value={key.id}>{key.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
+              />
+              <Controller
+                name="exchange.testnet"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Switch {...field} checked={field.value} />}
+                    label="Use Testnet"
+                  />
+                )}
+              />
+            </Paper>
+          </Grid>
+
+          {/* Execution Pool & Webhook */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" gutterBottom>Execution Pool</Typography>
+              <Controller
+                name="execution_pool.max_open_groups"
+                control={control}
+                render={({ field }) => (
+                  <TextField {...field} type="number" fullWidth label="Max Open Position Groups" margin="normal" />
+                )}
+              />
+            </Paper>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>Webhook Settings</Typography>
+              <Controller
+                name="webhook.secret"
+                control={control}
+                render={({ field }) => (
+                  <TextField {...field} type="password" fullWidth label="Webhook Secret" margin="normal" />
+                )}
+              />
+            </Paper>
+          </Grid>
+
+          {/* Risk Management */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>Risk Management</Typography>
+              <Controller
+                name="risk_management.risk_engine_enabled"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Switch {...field} checked={field.value} />}
+                    label="Enable Risk Engine"
                   />
                 )}
               />
               <Controller
-                name={`grid_strategy.dca_config.${index}.capital_weight` as const}
+                name="risk_management.activation_threshold"
                 control={control}
-                rules={{ required: 'Capital weight is required', min: { value: 0, message: 'Must be non-negative' } }}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="normal"
-                    fullWidth
-                    label="Capital Weight (%)"
-                    type="number"
-                    step="0.01"
-                    error={!!errors.grid_strategy?.dca_config?.[index]?.capital_weight}
-                    helperText={errors.grid_strategy?.dca_config?.[index]?.capital_weight?.message}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  />
+                  <TextField {...field} type="number" fullWidth label="Activation Threshold (%)" margin="normal" />
                 )}
               />
               <Controller
-                name={`grid_strategy.dca_config.${index}.tp_target` as const}
+                name="risk_management.max_loss_per_trade"
                 control={control}
-                rules={{ required: 'TP target is required', min: { value: 0, message: 'Must be non-negative' } }}
                 render={({ field }) => (
-                  <TextField
-                    {...field}
-                    margin="normal"
-                    fullWidth
-                    label="TP Target (%)"
-                    type="number"
-                    step="0.001"
-                    error={!!errors.grid_strategy?.dca_config?.[index]?.tp_target}
-                    helperText={errors.grid_strategy?.dca_config?.[index]?.tp_target?.message}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  />
+                  <TextField {...field} type="number" fullWidth label="Max Loss per Trade (%)" margin="normal" />
                 )}
               />
-            </Box>
-          ))}
-        </Paper>
+            </Paper>
+          </Grid>
 
-        <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+          {/* Grid Strategy */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>Grid Strategy - DCA Configuration</Typography>
+              <Grid container spacing={2}>
+                {config.grid_strategy.dca_config.map((dca, index) => (
+                  <Grid item xs={12} sm={6} md={4} lg={2.4} key={index}>
+                    <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
+                      <Typography variant="subtitle1" align="center">DCA Leg {index + 1}</Typography>
+                      <Controller
+                        name={`grid_strategy.dca_config.${index}.price_gap`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} type="number" fullWidth label="Price Gap (%)" margin="normal" />
+                        )}
+                      />
+                      <Controller
+                        name={`grid_strategy.dca_config.${index}.capital_weight`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} type="number" fullWidth label="Capital Weight (%)" margin="normal" />
+                        )}
+                      />
+                      <Controller
+                        name={`grid_strategy.dca_config.${index}.tp_target`}
+                        control={control}
+                        render={({ field }) => (
+                          <TextField {...field} type="number" fullWidth label="TP Target (%)" margin="normal" />
+                        )}
+                      />
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        <Button type="submit" variant="contained" sx={{ mt: 3, mb: 4 }}>
           Save Configuration
         </Button>
       </Box>

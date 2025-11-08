@@ -40,7 +40,7 @@ class PositionGroup(Base):
     id = Column(Integer, primary_key=True, index=True)
     pair = Column(String, index=True)
     timeframe = Column(String, index=True)
-    status = Column(String, default="Waiting") # e.g., Waiting, Live, Closed
+    status = Column(String) # e.g., Waiting, Live, Closed
     avg_entry_price = Column(Float, nullable=True)
     unrealized_pnl_percent = Column(Float, nullable=True)
     unrealized_pnl_usd = Column(Float, nullable=True)

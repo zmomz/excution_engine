@@ -56,12 +56,14 @@ def create_webhook_log(db: Session, payload: dict, status: str):
     logger.info(f"Successfully created webhook log with id: {db_log.id}")
     return db_log
 
-def get_webhook_logs(db: Session):
-    return db.query(models.WebhookLog).order_by(models.WebhookLog.timestamp.desc()).limit(100).all()
+def get_webhook_logs(db: Session, skip: int = 0, limit: int = 100):
+    logs = db.query(models.WebhookLog).order_by(models.WebhookLog.timestamp.desc()).offset(skip).limit(limit).all()
+    total = db.query(models.WebhookLog).count()
+    return {"logs": logs, "total": total}
 
 # Position Group CRUD
 def create_position_group(db: Session, position_group: schemas.PositionGroupCreate, user_id: int):
-    db_position_group = models.PositionGroup(**position_group.dict(), owner_id=user_id)
+    db_position_group = models.PositionGroup(**position_group.dict(), owner_id=user_id, status="Live")
     db.add(db_position_group)
     db.commit()
     db.refresh(db_position_group)
