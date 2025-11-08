@@ -83,16 +83,22 @@ class PositionGroupCreate(PositionGroupBase):
 class PositionGroupUpdate(PositionGroupBase):
     status: Optional[str] = None
     avg_entry_price: Optional[float] = None
+    unrealized_pnl_percent: Optional[float] = None
+    unrealized_pnl_usd: Optional[float] = None
     closed_at: Optional[datetime] = None
 
 class PositionGroup(PositionGroupBase):
     id: int
     status: str
     avg_entry_price: Optional[float] = None
+    unrealized_pnl_percent: Optional[float] = None
+    unrealized_pnl_usd: Optional[float] = None
     created_at: datetime
     closed_at: Optional[datetime] = None
     owner_id: int
     pyramids: List[Pyramid] = []
+    pyramids_count: int = 0
+    dca_legs_count: int = 0
 
     class Config:
         from_attributes = True

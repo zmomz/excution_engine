@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from . import models, schemas, security
 from .logging_config import logger
 
@@ -71,7 +71,15 @@ def get_position_group(db: Session, position_group_id: int):
     return db.query(models.PositionGroup).filter(models.PositionGroup.id == position_group_id).first()
 
 def get_position_groups_by_user(db: Session, user_id: int):
-    return db.query(models.PositionGroup).filter(models.PositionGroup.owner_id == user_id).all()
+    position_groups = db.query(models.PositionGroup).options(
+        joinedload(models.PositionGroup.pyramids).joinedload(models.Pyramid.dca_legs)
+    ).filter(models.PositionGroup.owner_id == user_id).all()
+
+    for pg in position_groups:
+        pg.pyramids_count = len(pg.pyramids)
+        pg.dca_legs_count = sum(len(p.dca_legs) for p in pg.pyramids)
+
+    return position_groups
 
 def update_position_group(db: Session, position_group_id: int, position_group: schemas.PositionGroupUpdate):
     db_position_group = get_position_group(db, position_group_id)
