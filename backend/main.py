@@ -303,6 +303,64 @@ async def receive_webhook(
 
     return {"message": "Webhook processed and position updated"}
 
+@app.get("/config/")
+def get_config(current_user: schemas.User = Depends(get_current_user)):
+    # For now, config is global, not per-user. User dependency is for auth.
+    return config_manager.load_config()
+
+@app.post("/config/")
+def update_config(new_config: dict, current_user: schemas.User = Depends(get_current_user)):
+    # For now, config is global, not per-user. User dependency is for auth.
+    config_manager.save_config(new_config)
+    return {"message": "Configuration updated successfully"}
+
+@app.get("/dashboard-metrics/")
+def get_dashboard_metrics(db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_user)):
+    # Total Active Position Groups
+    active_position_groups = db.query(models.PositionGroup).filter(
+        models.PositionGroup.owner_id == current_user.id,
+        models.PositionGroup.status == "Live"
+    ).all()
+    total_active_position_groups = len(active_position_groups)
+
+    # Execution Pool Usage
+    # TODO: Get max_open_groups from config_manager
+    max_open_groups = 10 # Hardcoded for now
+    execution_pool_usage = f"{total_active_position_groups} / {max_open_groups}"
+
+    # Queued Signals Count
+    queued_signals_count = db.query(models.QueuedSignal).filter(
+        models.QueuedSignal.owner_id == current_user.id,
+        models.QueuedSignal.status == "Queued"
+    ).count()
+
+    # Total PnL (Realized + Unrealized)
+    total_unrealized_pnl_usd = sum(pg.unrealized_pnl_usd for pg in active_position_groups if pg.unrealized_pnl_usd is not None)
+    # TODO: Add realized PnL once implemented
+    total_pnl_usd = total_unrealized_pnl_usd
+    total_pnl_percent = None # TODO: Calculate total PnL percent
+
+    # Last Webhook Timestamp
+    last_webhook_log = db.query(models.WebhookLog).order_by(models.WebhookLog.timestamp.desc()).first()
+    last_webhook_timestamp = last_webhook_log.timestamp.isoformat() if last_webhook_log else "N/A"
+
+    # Placeholder for Engine Status Banner, Risk Engine Status, Error & Warning Alerts
+    engine_status = "Running"
+    risk_engine_status = "Idle"
+    error_alerts = []
+
+    return {
+        "total_active_position_groups": total_active_position_groups,
+        "execution_pool_usage": execution_pool_usage,
+        "queued_signals_count": queued_signals_count,
+        "total_pnl_usd": total_pnl_usd,
+        "total_pnl_percent": total_pnl_percent,
+        "last_webhook_timestamp": last_webhook_timestamp,
+        "engine_status": engine_status,
+        "risk_engine_status": risk_engine_status,
+        "error_alerts": error_alerts,
+    }
+
 @app.get("/position-groups/", response_model=List[schemas.PositionGroup])
 def read_position_groups_for_user(
     current_user: schemas.User = Depends(get_current_user),

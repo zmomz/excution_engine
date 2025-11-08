@@ -17,8 +17,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  AppBar,
-  Toolbar,
   IconButton,
   Modal,
   Dialog,
@@ -26,6 +24,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Grid,
+  CircularProgress,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
@@ -40,6 +40,18 @@ interface WebhookLog {
   timestamp: string;
   payload: any;
   status: string;
+}
+
+interface DashboardMetrics {
+  total_active_position_groups: number;
+  execution_pool_usage: string;
+  queued_signals_count: number;
+  total_pnl_usd: number;
+  total_pnl_percent: number | null;
+  last_webhook_timestamp: string;
+  engine_status: string;
+  risk_engine_status: string;
+  error_alerts: string[];
 }
 
 const addSchema = yup.object().shape({
@@ -76,6 +88,7 @@ const editSchema = yup.object().shape({
 const DashboardPage: React.FC = () => {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
+  const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics | null>(null);
   const [serverError, setServerError] = useState('');
   const [editingKey, setEditingKey] = useState<ApiKey | null>(null);
   const [deletingKey, setDeletingKey] = useState<ApiKey | null>(null);
@@ -123,14 +136,34 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const fetchDashboardMetrics = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get('http://localhost:8001/dashboard-metrics/', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setDashboardMetrics(response.data);
+    } catch (err) {
+      console.error('Failed to fetch dashboard metrics:', err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
       fetchApiKeys();
       fetchWebhookLogs();
+      fetchDashboardMetrics();
 
-      const interval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
-      return () => clearInterval(interval);
+      const webhookInterval = setInterval(fetchWebhookLogs, 5000); // Refresh every 5 seconds
+      const metricsInterval = setInterval(fetchDashboardMetrics, 5000); // Refresh every 5 seconds
+
+      return () => {
+        clearInterval(webhookInterval);
+        clearInterval(metricsInterval);
+      };
     }
   }, [localStorage.getItem('access_token')]);
 
@@ -205,11 +238,90 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const pnlColor = dashboardMetrics?.total_pnl_percent !== null
+    ? (dashboardMetrics?.total_pnl_percent >= 0 ? 'green' : 'red')
+    : 'inherit';
+
   return (
     <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Typography component="h1" variant="h4" gutterBottom>
         Dashboard
       </Typography>
+
+      {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
+
+      {dashboardMetrics ? (
+        <Grid container spacing={3} sx={{ mb: 4, width: '100%' }}>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Active Positions</Typography>
+              <Typography variant="h4">{dashboardMetrics.total_active_position_groups}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Execution Pool</Typography>
+              <Typography variant="h4">{dashboardMetrics.execution_pool_usage}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Queued Signals</Typography>
+              <Typography variant="h4">{dashboardMetrics.queued_signals_count}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Total PnL (USD)</Typography>
+              <Typography variant="h4" style={{ color: pnlColor }}>
+                {dashboardMetrics.total_pnl_usd.toFixed(2)}$
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Total PnL (%)</Typography>
+              <Typography variant="h4" style={{ color: pnlColor }}>
+                {dashboardMetrics.total_pnl_percent !== null ? `${dashboardMetrics.total_pnl_percent.toFixed(2)}%` : 'N/A'}
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Last Webhook</Typography>
+              <Typography variant="h5">{new Date(dashboardMetrics.last_webhook_timestamp).toLocaleString()}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Engine Status</Typography>
+              <Typography variant="h5">{dashboardMetrics.engine_status}</Typography>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Typography variant="h6">Risk Engine Status</Typography>
+              <Typography variant="h5">{dashboardMetrics.risk_engine_status}</Typography>
+            </Paper>
+          </Grid>
+          {dashboardMetrics.error_alerts.length > 0 && (
+            <Grid item xs={12}>
+              <Alert severity="error">
+                <Typography variant="h6">Alerts</Typography>
+                <List>
+                  {dashboardMetrics.error_alerts.map((alert, index) => (
+                    <ListItem key={index}><ListItemText primary={alert} /></ListItem>
+                  ))}
+                </List>
+              </Alert>
+            </Grid>
+          )}
+        </Grid>
+      ) : (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
 
         <Paper sx={{ p: 3, mt: 4, width: '100%' }}>
           <Typography component="h2" variant="h5" gutterBottom>
