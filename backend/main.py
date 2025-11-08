@@ -20,10 +20,14 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+from . import tasks
+import asyncio
+
 @app.on_event("startup")
 async def startup():
     r = redis.from_url(config.REDIS_URL, encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(r)
+    asyncio.create_task(tasks.check_take_profits())
 
 origins = [
     "http://localhost:5173",
