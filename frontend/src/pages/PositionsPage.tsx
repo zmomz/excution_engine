@@ -38,12 +38,20 @@ interface PositionGroup {
   timeframe: string;
   status: string;
   avg_entry_price: number | null;
+  unrealized_pnl_percent: number | null;
+  unrealized_pnl_usd: number | null;
   tp_mode: string;
   pyramids: Pyramid[];
+  pyramids_count: number;
+  dca_legs_count: number;
 }
 
 const Row: React.FC<{ row: PositionGroup }> = ({ row }) => {
   const [open, setOpen] = useState(false);
+
+  const pnlColor = row.unrealized_pnl_percent !== null
+    ? (row.unrealized_pnl_percent >= 0 ? 'green' : 'red')
+    : 'inherit';
 
   return (
     <React.Fragment>
@@ -61,12 +69,18 @@ const Row: React.FC<{ row: PositionGroup }> = ({ row }) => {
           {row.pair}
         </TableCell>
         <TableCell>{row.timeframe}</TableCell>
-        <TableCell>{row.status}</TableCell>
-        <TableCell>{row.avg_entry_price}</TableCell>
+        <TableCell>{row.pyramids_count} / 5</TableCell>
+        <TableCell>{row.dca_legs_count} / {row.pyramids_count * 5} </TableCell> {/* Assuming 5 DCA legs per pyramid for now */}
+        <TableCell>{row.avg_entry_price?.toFixed(2) || 'N/A'}</TableCell>
+        <TableCell style={{ color: pnlColor }}>
+          {row.unrealized_pnl_percent !== null ? `${row.unrealized_pnl_percent.toFixed(2)}%` : 'N/A'}
+          {row.unrealized_pnl_usd !== null ? ` (${row.unrealized_pnl_usd.toFixed(2)}$)` : ''}
+        </TableCell>
         <TableCell>{row.tp_mode}</TableCell>
+        <TableCell>{row.status}</TableCell>
       </TableRow>
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={9}> {/* Increased colSpan */}
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <Typography variant="h6" gutterBottom component="div">
@@ -90,10 +104,10 @@ const Row: React.FC<{ row: PositionGroup }> = ({ row }) => {
                       {pyramid.dca_legs.map((leg) => (
                         <TableRow key={leg.id}>
                           <TableCell>{leg.id}</TableCell>
-                          <TableCell>{leg.price_gap}</TableCell>
-                          <TableCell>{leg.capital_weight}</TableCell>
-                          <TableCell>{leg.tp_target}</TableCell>
-                          <TableCell>{leg.fill_price}</TableCell>
+                          <TableCell>{(leg.price_gap * 100).toFixed(2)}%</TableCell>
+                          <TableCell>{(leg.capital_weight * 100).toFixed(2)}%</TableCell>
+                          <TableCell>{(leg.tp_target * 100).toFixed(2)}%</TableCell>
+                          <TableCell>{leg.fill_price?.toFixed(2) || 'N/A'}</TableCell>
                           <TableCell>{leg.status}</TableCell>
                         </TableRow>
                       ))}
@@ -144,9 +158,12 @@ const PositionsPage: React.FC = () => {
               <TableCell />
               <TableCell>Pair</TableCell>
               <TableCell>Timeframe</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Pyramids</TableCell>
+              <TableCell>DCA Filled</TableCell>
               <TableCell>Avg Entry Price</TableCell>
+              <TableCell>Unrealized PnL</TableCell>
               <TableCell>TP Mode</TableCell>
+              <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
