@@ -2,6 +2,8 @@ from jose import JWTError, jwt
 from datetime import timedelta, datetime
 from typing import List
 
+from .logging_config import logger
+
 from fastapi import Depends, FastAPI, HTTPException, status, Request, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -70,24 +72,24 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @app.post("/token", response_model=schemas.Token, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    print(f"Received login request for username: {form_data.username}")
+    logger.info(f"Received login request for username: {form_data.username}")
     user = crud.get_user_by_username(db, username=form_data.username)
     if not user:
-        print("User not found in the database")
+        logger.warning("User not found in the database")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    print(f"User found: {user.username}, Hashed password: {user.hashed_password}")
+    logger.info(f"User found: {user.username}")
     if not security.verify_password(form_data.password, user.hashed_password):
-        print("Password verification failed")
+        logger.warning("Password verification failed")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    print("Password verification successful")
+    logger.info("Password verification successful")
     access_token_expires = timedelta(minutes=security.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = security.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
@@ -178,7 +180,7 @@ async def receive_webhook(
         raise HTTPException(status_code=401, detail="Invalid X-Signature")
 
     payload = await request.json()
-    print(f"Received webhook payload: {payload}")
+    logger.info(f"Received webhook payload: {payload}")
     status_message = "Webhook received and validated"
     status_code = 200
 
