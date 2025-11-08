@@ -28,6 +28,7 @@ async def startup():
     r = redis.from_url(config.REDIS_URL, encoding="utf-8", decode_responses=True)
     await FastAPILimiter.init(r)
     asyncio.create_task(tasks.check_take_profits())
+    asyncio.create_task(tasks.run_risk_engine_task())
 
 origins = [
     "http://localhost:5173",
