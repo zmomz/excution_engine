@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas, security
 from .logging_config import logger
 
+# User CRUD
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
@@ -13,6 +14,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+# API Key CRUD
 def get_user_api_key_by_name(db: Session, name: str, user_id: int):
     return db.query(models.ApiKey).filter(models.ApiKey.name == name, models.ApiKey.owner_id == user_id).first()
 
@@ -44,6 +46,7 @@ def update_api_key(db: Session, api_key_id: int, name: str, user_id: int):
         db.refresh(db_api_key)
     return db_api_key
 
+# Webhook Log CRUD
 def create_webhook_log(db: Session, payload: dict, status: str):
     logger.info(f"Attempting to create webhook log with status: {status} and payload: {payload}")
     db_log = models.WebhookLog(payload=payload, status=status)
@@ -55,3 +58,64 @@ def create_webhook_log(db: Session, payload: dict, status: str):
 
 def get_webhook_logs(db: Session):
     return db.query(models.WebhookLog).order_by(models.WebhookLog.timestamp.desc()).limit(100).all()
+
+# Position Group CRUD
+def create_position_group(db: Session, position_group: schemas.PositionGroupCreate, user_id: int):
+    db_position_group = models.PositionGroup(**position_group.dict(), owner_id=user_id)
+    db.add(db_position_group)
+    db.commit()
+    db.refresh(db_position_group)
+    return db_position_group
+
+def get_position_group(db: Session, position_group_id: int):
+    return db.query(models.PositionGroup).filter(models.PositionGroup.id == position_group_id).first()
+
+def get_position_groups_by_user(db: Session, user_id: int):
+    return db.query(models.PositionGroup).filter(models.PositionGroup.owner_id == user_id).all()
+
+def update_position_group(db: Session, position_group_id: int, position_group: schemas.PositionGroupUpdate):
+    db_position_group = get_position_group(db, position_group_id)
+    if db_position_group:
+        update_data = position_group.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_position_group, key, value)
+        db.commit()
+        db.refresh(db_position_group)
+    return db_position_group
+
+# Pyramid CRUD
+def create_pyramid(db: Session, pyramid: schemas.PyramidCreate):
+    db_pyramid = models.Pyramid(**pyramid.dict())
+    db.add(db_pyramid)
+    db.commit()
+    db.refresh(db_pyramid)
+    return db_pyramid
+
+# DCA Leg CRUD
+def create_dca_leg(db: Session, dca_leg: schemas.DCALegCreate):
+    db_dca_leg = models.DCALeg(**dca_leg.dict())
+    db.add(db_dca_leg)
+    db.commit()
+    db.refresh(db_dca_leg)
+    return db_dca_leg
+
+def update_dca_leg(db: Session, dca_leg_id: int, dca_leg: schemas.DCALegUpdate):
+    db_dca_leg = db.query(models.DCALeg).filter(models.DCALeg.id == dca_leg_id).first()
+    if db_dca_leg:
+        update_data = dca_leg.dict(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_dca_leg, key, value)
+        db.commit()
+        db.refresh(db_dca_leg)
+    return db_dca_leg
+
+# Queued Signal CRUD
+def create_queued_signal(db: Session, queued_signal: schemas.QueuedSignalCreate, user_id: int):
+    db_queued_signal = models.QueuedSignal(**queued_signal.dict(), owner_id=user_id)
+    db.add(db_queued_signal)
+    db.commit()
+    db.refresh(db_queued_signal)
+    return db_queued_signal
+
+def get_queued_signals_by_user(db: Session, user_id: int):
+    return db.query(models.QueuedSignal).filter(models.QueuedSignal.owner_id == user_id).all()
