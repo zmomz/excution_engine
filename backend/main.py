@@ -303,6 +303,13 @@ async def receive_webhook(
 
     return {"message": "Webhook processed and position updated"}
 
+@app.get("/position-groups/", response_model=List[schemas.PositionGroup])
+def read_position_groups_for_user(
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_position_groups_by_user(db=db, user_id=current_user.id)
+
 @app.get("/webhooks/logs/")
 def get_webhook_logs(db: Session = Depends(get_db)):
     return crud.get_webhook_logs(db)
