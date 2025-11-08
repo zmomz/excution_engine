@@ -42,6 +42,8 @@ class PositionGroup(Base):
     timeframe = Column(String, index=True)
     status = Column(String, default="Waiting") # e.g., Waiting, Live, Closed
     avg_entry_price = Column(Float, nullable=True)
+    unrealized_pnl_percent = Column(Float, nullable=True)
+    unrealized_pnl_usd = Column(Float, nullable=True)
     tp_mode = Column(String, default="Per-Leg TP") # e.g., Per-Leg TP, Aggregate TP, Hybrid TP
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     closed_at = Column(DateTime(timezone=True), nullable=True)
