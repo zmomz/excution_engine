@@ -3,6 +3,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PositionsPage from './pages/PositionsPage';
+import SettingsPage from './pages/SettingsPage';
+import LogsPage from './pages/LogsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import { CssBaseline, Box, Toolbar } from '@mui/material';
@@ -37,6 +39,30 @@ function App() {
                   <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
                     <Toolbar />
                     <PositionsPage />
+                  </Box>
+                </>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <>
+                  <Sidebar />
+                  <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                    <Toolbar />
+                    <SettingsPage />
+                  </Box>
+                </>
+              }
+            />
+            <Route
+              path="/logs"
+              element={
+                <>
+                  <Sidebar />
+                  <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                    <Toolbar />
+                    <LogsPage />
                   </Box>
                 </>
               }
