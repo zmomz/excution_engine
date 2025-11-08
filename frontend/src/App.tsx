@@ -4,11 +4,12 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import PositionsPage from './pages/PositionsPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import { CssBaseline } from '@mui/material';
+import Sidebar from './components/Sidebar';
+import { CssBaseline, Box, Toolbar } from '@mui/material';
 
 function App() {
   return (
-    <>
+    <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <Router>
         <Routes>
@@ -16,12 +17,34 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/positions" element={<PositionsPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <>
+                  <Sidebar />
+                  <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                    <Toolbar />
+                    <DashboardPage />
+                  </Box>
+                </>
+              }
+            />
+            <Route
+              path="/positions"
+              element={
+                <>
+                  <Sidebar />
+                  <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                    <Toolbar />
+                    <PositionsPage />
+                  </Box>
+                </>
+              }
+            />
           </Route>
         </Routes>
       </Router>
-    </>
+    </Box>
   );
 }
 
