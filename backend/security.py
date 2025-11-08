@@ -42,3 +42,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+    import hmac
+    import hashlib
+    import base64
+
+    expected_signature = hmac.new(secret.encode('utf-8'), payload, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected_signature, signature)

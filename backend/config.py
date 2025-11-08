@@ -10,3 +10,6 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://ex_engine_user:a_str
 
 # Redis
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
+
+# Webhooks
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "your_webhook_secret_here")
