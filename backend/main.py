@@ -313,3 +313,13 @@ def read_position_groups_for_user(
 @app.get("/webhooks/logs/")
 def get_webhook_logs(db: Session = Depends(get_db)):
     return crud.get_webhook_logs(db)
+
+@app.get("/logs/")
+def get_logs(current_user: schemas.User = Depends(get_current_user)):
+    log_file_path = "ex_engine.log" # Assuming log file is in the root directory
+    try:
+        with open(log_file_path, 'r') as f:
+            logs = f.readlines()
+        return {"logs": logs}
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Log file not found")
