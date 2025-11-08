@@ -27,8 +27,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { Link } from 'react-router-dom';
 
 interface ApiKey {
   id: number;
@@ -211,6 +210,9 @@ const DashboardPage: React.FC = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Execution Engine
           </Typography>
+          <Button color="inherit" component={Link} to="/positions">
+            Positions
+          </Button>
         </Toolbar>
       </AppBar>
       <Container component="main" maxWidth="lg" sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
